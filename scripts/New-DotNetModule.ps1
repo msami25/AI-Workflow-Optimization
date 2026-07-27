@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 Creates a reusable .NET module skeleton and adds it to a solution.
 
@@ -55,8 +55,8 @@ function Invoke-DotNet {
         [Parameter(Mandatory)][string]$Description
     )
 
-    Write-Host "→ $Description" -ForegroundColor Cyan
-    & dotnet @Arguments
+    Write-Host "[$Description]" -ForegroundColor Cyan
+    & dotnet @Arguments | Out-Host
     if ($LASTEXITCODE -ne 0) {
         throw "dotnet command failed ($LASTEXITCODE): dotnet $($Arguments -join ' ')"
     }
@@ -225,3 +225,4 @@ Write-Host "Tests:       $testProject"
 Write-Host "Solution:    $resolvedSolution"
 Write-Host ""
 Write-Host "Next: use Templates 1, 2, 4, 5, and 9 from PROMPT_LIBRARY.md." -ForegroundColor Cyan
+
