@@ -2,6 +2,39 @@
 
 All notable changes to this toolkit are documented here.
 
+## 1.1.0 - 2026-07-27
+
+### Added
+
+- A hash-frozen 17-prompt evaluation packet covering all 12 templates, with
+  Event and Category variants for Templates 1, 2, 4, 9, and 10.
+- Separate Codex and Antigravity response, workspace, scoring, and build/test
+  evidence directories.
+- A final evidence-audited comparison report and independent per-template
+  rubric scores.
+- Isolated `.NET 8` comparison workspaces so the successful `demo` project
+  remained unchanged.
+
+### Verified
+
+- Codex corrected workspace: Release build passed with 0 warnings/errors and
+  13/13 tests passed.
+- Antigravity corrected workspace: Release build passed with 0 warnings/errors
+  and 9/9 tests passed.
+- Both quality gates generated XPlat coverage successfully.
+- All shared prompt hashes still match their frozen manifest.
+
+### Documented
+
+- Tool B accurately as “Antigravity agent run: Claude followed by Gemini
+  fallback”; Gemini took over after the Claude usage limit.
+- The model transition as a comparison limitation rather than presenting Tool
+  B as a pure Claude run.
+- Unsupported Tool B self-score, environment, test-file, and
+  compile-without-correction claims without deleting the raw artifact.
+- Missing timing/manual-baseline evidence, so development-time improvement
+  remains unmeasured.
+
 ## 1.0.0 - 2026-07-27
 
 ### Added

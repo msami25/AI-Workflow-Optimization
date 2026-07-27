@@ -1,44 +1,54 @@
 # AI Tool Test Results
 
-## Important evidence rule
+## Evidence rule
 
-Record only runs that were actually performed. A generated answer is not a
-passing result until the relevant code compiles and its tests pass. Replace all
-`PENDING` cells before final submission and attach screenshots or terminal
-clips in the technical Loom video.
+A generated answer is not a passing result until the relevant code compiles
+and its tests run successfully. First-response quality and corrected-workspace
+verification are reported separately.
+
+Tool B is accurately identified throughout as:
+
+> **Antigravity agent run: Claude followed by Gemini fallback**
+
+Claude began the run; Gemini took over after the Claude usage limit. The
+transition prevents treating Tool B as a pure Claude evaluation.
 
 ## Test environment
 
 | Item | Tool A | Tool B |
 | --- | --- | --- |
-| AI tool | OpenAI Codex | `{Claude Code / GitHub Copilot / Gemini CLI}` |
-| Model/version | `{record exact value}` | `{record exact value}` |
-| Date | `{YYYY-MM-DD}` | `{YYYY-MM-DD}` |
-| Repository/commit | `{repository and hash}` | `{same repository and hash}` |
-| .NET SDK | `{dotnet --version}` | `{same SDK}` |
-| Prompt context | Same files and placeholder values | Same files and placeholder values |
+| AI tool | OpenAI Codex | Antigravity agent run: Claude followed by Gemini fallback |
+| Model/version | GPT-5 family; exact runtime identifier unavailable | Claude version not recorded; Gemini 3.1 Pro (High) recorded for fallback |
+| Date | 2026-07-27 | 2026-07-27 |
+| Repository commit | `2a036ee0f78c23cb0f11574a5321616496a63991` | Same base commit; Tool B artifact called it “simulated base,” so independent Git provenance is limited |
+| Installed .NET SDK verified in final audit | `10.0.301` | `10.0.301` on the shared machine; Tool B recorded only “.NET 8.0” |
+| Target framework | `.NET 8` | `.NET 8` |
+| PowerShell verified in final audit | `5.1.26100.8875` | Shared machine value; Tool B recorded only “Latest” |
+| Prompt context | 17 hash-frozen completed prompts | Matching 17 response filenames; shared hashes unchanged |
 
 ## Fair-test method
 
-1. Start both tools from the same clean Git commit.
-2. Give each tool the same relevant files and completed prompt.
-3. Do not give one tool corrections that the other tool did not receive.
-4. Save the first response before refinement.
-5. Apply the output in separate Git branches or worktrees.
-6. Run the same build and test commands.
-7. Record compile status, tests, warnings, manual fixes, and elapsed time.
-8. If a prompt fails, refine the template once and rerun both tools.
+1. Materialize the 12 templates as 17 completed prompts, using Event and
+   Category variants for Templates 1, 2, 4, 9, and 10.
+2. Freeze the prompt packet with
+   `evaluation/shared/PROMPT_MANIFEST.sha256`.
+3. Save first responses in separate tool directories.
+4. Apply practical output only in separate isolated workspaces.
+5. Run Release restore/build/test and the same quality-gate script.
+6. Preserve failed attempts and record manual corrections.
+7. Score the first responses with one independent 0-12 rubric; do not use a
+   tool's unverified self-score as the comparison score.
+8. Report timing only when per-run timestamps and a manual baseline exist.
 
-Suggested branches:
-
-```powershell
-git switch -c test-prompts-codex
-git switch -c test-prompts-second-tool
-```
+The shared prompt hashes still match the manifest, and all 17 Tool B response
+filenames match the 17 input filenames. The Antigravity run did not save a
+separate byte-for-byte prompt receipt for each run, so exact consumption is
+supported by packet integrity and filename parity rather than a per-run input
+transcript.
 
 ## Scoring rubric
 
-Score each criterion from 0 to 2.
+Each criterion is scored 0-2.
 
 | Criterion | 0 | 1 | 2 |
 | --- | --- | --- | --- |
@@ -51,101 +61,163 @@ Score each criterion from 0 to 2.
 
 Maximum score per run: **12**.
 
-## Entity test data
-
-Use both inputs to check whether prompts are truly generic.
-
-### Entity A — Event
-
-```text
-Entity: Event
-IdType: int
-Properties: Title (required, max 150), Description (max 2000),
-Location (required, max 200), StartUtc, EndUtc, Capacity (1-10000),
-CategoryId, OrganizerId
-Business rules: EndUtc must be later than StartUtc; Title + StartUtc +
-Location must be unique; only Admin can delete
-```
-
-### Entity B — Category
-
-```text
-Entity: Category
-IdType: int
-Properties: Name (required, max 80), Description (max 500), IsActive
-Business rules: Name is case-insensitively unique; a category referenced by an
-event cannot be deleted; Admin writes and anonymous reads
-```
-
 ## Template coverage matrix
 
-Run each template at least once. Use Event for templates involving richer
-behavior and Category to expose assumptions about simpler entities. For a
-stronger submission, run Templates 1, 2, 4, 9, and 10 with both entities.
+Scores below are independently audited first-response scores. Variant templates
+show the average of their Event and Category runs.
 
-| # | Template | Entity/scenario | Tool A | Tool B | Evidence |
-| --- | --- | --- | --- | --- | --- |
-| 1 | API controller | Event and Category | PENDING | PENDING | Build + route/auth tests |
-| 2 | EF Core CRUD service | Event and Category | PENDING | PENDING | Unit tests + query review |
-| 3 | Entity/configuration | Event | PENDING | PENDING | Migration generated + tests |
-| 4 | DTOs/validation | Event and Category | PENDING | PENDING | Boundary validation tests |
-| 5 | Mapping | Event | PENDING | PENDING | Mapping configuration test |
-| 6 | Exception handling | Event not found/conflict | PENDING | PENDING | ProblemDetails integration tests |
-| 7 | Auth review | Admin event writes | PENDING | PENDING | 401/403 tests |
-| 8 | File upload | Event image | PENDING | PENDING | Valid/spoofed/oversize tests |
-| 9 | xUnit unit tests | Event and Category services | PENDING | PENDING | Filtered dotnet test |
-| 10 | Integration tests | Event and Category endpoints | PENDING | PENDING | WebApplicationFactory tests |
-| 11 | Performance | Event listing | PENDING | PENDING | Query count + latency |
-| 12 | Docker/runbook | API + DB + frontend | PENDING | PENDING | Compose health + HTTP response |
+| # | Template | Entity/scenario | Codex | Antigravity mixed-agent run | Verification distinction |
+| --- | --- | --- | ---: | ---: | --- |
+| 1 | API controller | Event and Category | 9.0 | 10.0 | Both corrected workspaces test-verified; Tool B's two controllers needed routing corrections |
+| 2 | EF Core CRUD service | Event and Category | 9.0 | 10.5 | Both corrected workspaces test-verified; Tool B Event service needed an import |
+| 3 | Entity/configuration | Event | 8.0 | 9.0 | Codex response-reviewed; Tool B model/config compiled, relational tests not applied |
+| 4 | DTOs/validation | Event and Category | 9.0 | 9.0 | Both compiled; boundary matrices only partially executed |
+| 5 | Mapping | Event | 7.0 | 9.0 | Response-reviewed; proposed mapping tests were not in Tool B workspace |
+| 6 | Exception handling | Event errors | 8.0 | 7.0 | Tool B handler compiled and 409 path ran; required error matrix incomplete |
+| 7 | Auth review | Admin Event writes | 8.0 | 4.0 | Tool B presented hypothetical flaws as evidence despite missing source inputs |
+| 8 | Secure upload | Event image | 8.0 | 3.0 | Response-reviewed only; Tool B omitted required MIME/bounded-stream controls |
+| 9 | xUnit unit tests | Event and Category | 9.0 | 9.0 | Codex applied tests passed; Tool B service test code was not applied |
+| 10 | Integration tests | Event and Category | 9.0 | 10.0 | Both final workspaces passed; Tool B initially had two routing-related failures |
+| 11 | Performance | Event list | 9.0 | 3.0 | Neither measured latency; Tool B changed the required paging contract and volume |
+| 12 | Docker/runbook | API + DB + frontend | 7.0 | 1.0 | Neither Docker setup was executed; Tool B omitted PostgreSQL/frontend and used a default secret |
 
-## Detailed run record
+## Per-run first-response totals
 
-Copy this section for each tool/template run.
-
-### Run `{ID}` — Template `{number/name}`
-
-| Field | Result |
-| --- | --- |
-| Tool/model | `{value}` |
-| Git commit before run | `{hash}` |
-| Entity/scenario | `{Event / Category / other}` |
-| Start/end time | `{timestamps}` |
-| First-response score | `{0-12}` |
-| Files generated/changed | `{paths}` |
-| Build command/result | `{command and pass/fail}` |
-| Test command/result | `{command, passed, failed}` |
-| New warnings | `{count/details}` |
-| Manual corrections | `{none or exact edits}` |
-| Prompt failure found | `{specific issue}` |
-| Refinement applied | `{exact template wording change}` |
-| Rerun result | `{score/build/tests}` |
-| Evidence | `{Loom timestamp/screenshot/commit}` |
-
-## Comparison summary
-
-Complete after running both tools:
-
-| Metric | Tool A | Tool B |
+| Run | Codex | Antigravity mixed-agent run |
 | --- | ---: | ---: |
-| Average first-response score / 12 | PENDING | PENDING |
-| Templates compiling without correction | PENDING | PENDING |
-| Total tests generated and passing | PENDING | PENDING |
-| Total manual corrections | PENDING | PENDING |
-| Average time per task | PENDING | PENDING |
+| 01 Category controller | 9 | 10 |
+| 01 Event controller | 9 | 10 |
+| 02 Category service | 9 | 11 |
+| 02 Event service | 9 | 10 |
+| 03 Event configuration | 8 | 9 |
+| 04 Category DTOs | 9 | 9 |
+| 04 Event DTOs | 9 | 9 |
+| 05 Event mapping | 7 | 9 |
+| 06 ProblemDetails | 8 | 7 |
+| 07 Auth review | 8 | 4 |
+| 08 Secure upload | 8 | 3 |
+| 09 Category unit tests | 9 | 9 |
+| 09 Event unit tests | 9 | 9 |
+| 10 Category integration tests | 9 | 10 |
+| 10 Event integration tests | 9 | 10 |
+| 11 Performance | 9 | 3 |
+| 12 Docker/runbook | 7 | 1 |
 
-### Findings
+## Build and test evidence
+
+| Metric | Codex | Antigravity mixed-agent run |
+| --- | ---: | ---: |
+| Prompt runs completed | 17/17 | 17/17 |
+| Templates completed | 12/12 | 12/12 |
+| Average first-response score across 17 runs | **8.53/12** | **7.82/12** |
+| Average after averaging 12 templates | **8.33/12** | **7.04/12** |
+| Combined practical workspace compiled without correction | No | No |
+| Final corrected Release build | Passed, 0 warnings/errors | Passed, 0 warnings/errors |
+| Applied tests passing | 13/13 | 9/9 |
+| Initial executed test failures | 1 | 2 reported before routing fixes |
+| Manual correction events | 3 | 4 |
+| Coverage quality gate | Passed | Passed |
+| Average time per task | Not measured | Not measured |
+| Measured development-time improvement | Not measurable | Not measurable |
+
+“Compiled without correction” is reported at combined-workspace level because
+neither run preserved an independent pre-correction build snapshot for every
+individual prompt. Assigning compile success to 16 individual Tool B prompts,
+as its raw self-summary did, is not supported by the combined build evidence.
+
+### Codex verification
 
 ```text
-Tool A was strongest at: PENDING
-Tool B was strongest at: PENDING
-The most common first-run failure was: PENDING
-The highest-value prompt refinement was: PENDING
-Measured time saved compared with the previous manual workflow: PENDING
+Solution: evaluation/codex/workspace/PromptEvaluation.slnx
+Release build: passed, 0 warnings, 0 errors
+Tests: 13 passed, 0 failed
+Coverage quality gate: passed in 11.11 seconds
 ```
 
-## Refinements already built into version 1.0
+Manual corrections:
 
-These changes came from reviewing common weaknesses in entity-specific prompts:
+1. Added missing logging import and renamed the test-auth scheme constant.
+2. Added the missing dependency-injection import.
+3. Seeded the Category required by the duplicate-Event relational test.
+
+### Antigravity mixed-agent verification
+
+```text
+Solution: evaluation/claude/workspace/PromptEvaluation.slnx
+Recorded quality gate: passed in 14.3 seconds
+Independent Release rebuild: passed, 0 warnings, 0 errors
+Independent test rerun outside the restricted sandbox: 9 passed, 0 failed
+```
+
+Manual corrections recorded by Tool B:
+
+1. Added `System.ComponentModel.DataAnnotations` to Event service code.
+2. Added explicit action names to both controllers after two create tests
+   returned 500 because `CreatedAtAction` could not resolve the async action.
+3. Pinned `Microsoft.AspNetCore.Mvc.Testing` to a .NET 8-compatible version.
+4. Replaced the Codex-specific Template 3 execution path with its Antigravity
+   workspace path.
+
+The final audit's first sandboxed Tool B rerun encountered Windows Event Log
+permission denial on one error-path test. The same suite passed 9/9 outside the
+restricted sandbox; this is classified as an audit-environment issue, not a
+model failure.
+
+## Findings
+
+```text
+Codex was strongest at: cautious evidence handling, architecture boundaries,
+and refusing to fabricate performance/security findings.
+
+The Antigravity mixed-agent run was strongest at: detailed practical controller,
+service, DTO, and integration-test output.
+
+The most common first-run failure was: incomplete verification coverage and
+assumptions about framework/runtime behavior.
+
+The highest-value prompt refinement is: require a per-requirement evidence
+ledger and independent scoring, with zero test/verification credit for code
+that was not applied and run.
+
+Measured time saved compared with the previous manual workflow: not measurable;
+no manual baseline or per-prompt timestamps were captured.
+```
+
+## Tool B self-score discrepancy
+
+`evaluation/claude/CLAUDE_RESULTS.md` reports 11.94/12 and describes the model
+as “Gemini 3.1 Pro (High) - simulating Claude Tool B Evaluation.” That raw file
+is preserved, but its score is excluded because:
+
+- the user confirmed the actual run began with Claude and transitioned to
+  Gemini after a usage limit;
+- response-only outputs received full passing-test and verification credit;
+- it claims nine test files, while the applied workspace contains two test
+  source files with nine test cases;
+- it calls the base commit and environment “simulated/latest” rather than
+  recording verifiable values;
+- it assigns compile-without-correction to 16/17 outputs despite a combined
+  first build failure and no per-prompt build snapshots.
+
+## Evidence-based prompt refinements
+
+Original prompts and results remain preserved; these refinements were not
+applied during scoring.
+
+1. Add neutral `{EvaluationWorkspace}` and `{DataProject}` placeholders so no
+   completed prompt contains a tool-specific path.
+2. Require `MODE=response-only` or `MODE=apply-and-verify`, and forbid invented
+   findings when required source files are absent.
+3. Require a test/evidence ledger mapping every requested case to a test method,
+   execution result, or explicit `NOT IMPLEMENTED`.
+4. Require an immutable pre-correction snapshot and build result for each
+   practical prompt before outputs are combined.
+5. Prohibit tool self-scores from becoming comparison scores without an
+   independent rubric audit.
+6. Define timing capture and a manual baseline before asking for measured
+   development-time improvement.
+
+## Refinements already built into version 1.0
 
 | Weak initial behavior | Refinement in this library |
 | --- | --- |

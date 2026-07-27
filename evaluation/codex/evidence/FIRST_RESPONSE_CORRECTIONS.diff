@@ -1,0 +1,41 @@
+# Corrections applied after the first generated practical workspace
+#
+# This human-readable diff preserves the exact deltas needed to distinguish the
+# initial generated source from the final verified workspace. Reverse these
+# additions/renames to reconstruct the initial state.
+
+--- a/evaluation/codex/workspace/PromptEvaluation.Tests/ApiFactory.cs
++++ b/evaluation/codex/workspace/PromptEvaluation.Tests/ApiFactory.cs
+@@
++using Microsoft.Extensions.DependencyInjection;
+ using Microsoft.Extensions.DependencyInjection.Extensions;
++using Microsoft.Extensions.Logging;
+ using Microsoft.Extensions.Options;
+@@
+-options.DefaultAuthenticateScheme = TestAuthHandler.Scheme;
+-options.DefaultChallengeScheme = TestAuthHandler.Scheme;
+-options.DefaultForbidScheme = TestAuthHandler.Scheme;
++options.DefaultAuthenticateScheme = TestAuthHandler.SchemeName;
++options.DefaultChallengeScheme = TestAuthHandler.SchemeName;
++options.DefaultForbidScheme = TestAuthHandler.SchemeName;
+@@
+-TestAuthHandler.Scheme,
++TestAuthHandler.SchemeName,
+@@
+-public const string Scheme = "Test";
++public const string SchemeName = "Test";
+@@
+-new ClaimsIdentity(claims, Scheme)
++new ClaimsIdentity(claims, SchemeName)
+@@
+-new AuthenticationTicket(principal, Scheme)
++new AuthenticationTicket(principal, SchemeName)
+
+--- a/evaluation/codex/workspace/PromptEvaluation.Tests/ServiceTests.cs
++++ b/evaluation/codex/workspace/PromptEvaluation.Tests/ServiceTests.cs
+@@
+ var service = new EventService(fixture.Context, NullLogger<EventService>.Instance);
++fixture.Context.Categories.Add(new Category { Name = "General", IsActive = true });
++await fixture.Context.SaveChangesAsync();
+ var request = EventRequest("Launch");
+

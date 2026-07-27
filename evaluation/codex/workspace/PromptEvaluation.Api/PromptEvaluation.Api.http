@@ -1,0 +1,6 @@
+@PromptEvaluation.Api_HostAddress = http://localhost:5139
+
+GET {{PromptEvaluation.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

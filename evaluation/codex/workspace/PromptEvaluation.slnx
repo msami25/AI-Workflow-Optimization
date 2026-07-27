@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="PromptEvaluation.Api/PromptEvaluation.Api.csproj" />
+  <Project Path="PromptEvaluation.Tests/PromptEvaluation.Tests.csproj" />
+</Solution>

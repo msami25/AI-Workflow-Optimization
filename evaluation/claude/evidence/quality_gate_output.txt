@@ -1,0 +1,35 @@
+Running .NET quality gate
+Solution:      C:\Projects\AI-Workflow-Optimization\evaluation\claude\workspace\PromptEvaluation.slnx
+Configuration: Release
+Results:       C:\Projects\AI-Workflow-Optimization\artifacts\EvaluationClaudeTestResults
+
+[Restore] dotnet restore C:\Projects\AI-Workflow-Optimization\evaluation\claude\workspace\PromptEvaluation.slnx
+  Determining projects to restore...
+  Restored C:\Projects\AI-Workflow-Optimization\evaluation\claude\workspace\src\PromptEvaluation.Api\PromptEvaluation.Api.csproj (in 420 ms).
+  Restored C:\Projects\AI-Workflow-Optimization\evaluation\claude\workspace\tests\PromptEvaluation.Tests\PromptEvaluation.Tests.csproj (in 450 ms).
+Restore passed in 2.53 seconds.
+
+[Build] dotnet build C:\Projects\AI-Workflow-Optimization\evaluation\claude\workspace\PromptEvaluation.slnx --configuration Release --no-restore
+  PromptEvaluation.Api -> C:\Projects\AI-Workflow-Optimization\evaluation\claude\workspace\src\PromptEvaluation.Api\bin\Release\net8.0\PromptEvaluation.Api.dll
+  PromptEvaluation.Tests -> C:\Projects\AI-Workflow-Optimization\evaluation\claude\workspace\tests\PromptEvaluation.Tests\bin\Release\net8.0\PromptEvaluation.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.82
+Build passed in 5.09 seconds.
+
+[Tests] dotnet test C:\Projects\AI-Workflow-Optimization\evaluation\claude\workspace\PromptEvaluation.slnx --configuration Release --no-build --logger trx;LogFileName=tests.trx --results-directory C:\Projects\AI-Workflow-Optimization\artifacts\EvaluationClaudeTestResults --collect:XPlat Code Coverage
+Test run for C:\Projects\AI-Workflow-Optimization\evaluation\claude\workspace\tests\PromptEvaluation.Tests\bin\Release\net8.0\PromptEvaluation.Tests.dll (.NETCoreApp,Version=v8.0)
+A total of 1 test files matched the specified pattern.
+Results File: C:\Projects\AI-Workflow-Optimization\artifacts\EvaluationClaudeTestResults\tests.trx
+
+Passed!  - Failed:     0, Passed:     9, Skipped:     0, Total:     9, Duration: 2 s - PromptEvaluation.Tests.dll (net8.0)
+
+Attachments:
+  C:\Projects\AI-Workflow-Optimization\artifacts\EvaluationClaudeTestResults\a162684b-aa33-4647-a8e5-50fa20e1af9e\coverage.cobertura.xml
+Tests passed in 6.43 seconds.
+
+QUALITY GATE PASSED in 14.3 seconds.
+Test artifacts: C:\Projects\AI-Workflow-Optimization\artifacts\EvaluationClaudeTestResults
