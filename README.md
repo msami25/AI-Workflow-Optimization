@@ -10,6 +10,7 @@ repetitive development work.
 | `PROMPT_LIBRARY.md` | 12 refined, reusable prompt templates |
 | `scripts/New-DotNetModule.ps1` | Creates a class library, xUnit project, solution entries, and project reference |
 | `scripts/Invoke-DotNetQualityGate.ps1` | Restores, builds, tests, and optionally collects coverage |
+| `scripts/Invoke-EfDatabaseMigration.ps1` | Safely checks and optionally applies EF Core migrations and reseeding |
 | `AI_TOOL_TEST_RESULTS.md` | Repeatable comparison matrix for two AI tools |
 | `LOOM_SCRIPTS.md` | Technical and non-technical recording scripts |
 | `CHANGELOG.md` | Version history and refinements |
@@ -18,6 +19,7 @@ repetitive development work.
 
 - Windows PowerShell 5.1+ or PowerShell 7+
 - .NET 8 SDK or newer
+- `dotnet-ef` 8 or newer for database migration automation
 - A `.sln` or `.slnx` solution for existing-project use
 - Optional: ReportGenerator for an HTML coverage report
 
@@ -25,6 +27,7 @@ Check the environment:
 
 ```powershell
 dotnet --version
+dotnet ef --version
 $PSVersionTable.PSVersion
 ```
 
@@ -99,6 +102,119 @@ dotnet tool install --global dotnet-reportgenerator-globaltool
 ```
 
 Test and coverage artifacts are written beneath `artifacts/TestResults`.
+
+## Script 3: check and apply EF Core migrations
+
+The migration script is project-agnostic and runs in preview mode by default.
+It does not accept or print a connection string: the startup project must load
+database configuration from its normal environment-specific configuration.
+
+Check only; this never updates or seeds the database:
+
+```powershell
+.\scripts\Invoke-EfDatabaseMigration.ps1 `
+  -MigrationProject .\src\App.Data\App.Data.csproj `
+  -StartupProject .\src\App.Api\App.Api.csproj `
+  -Environment Staging
+```
+
+Apply reviewed pending migrations:
+
+```powershell
+.\scripts\Invoke-EfDatabaseMigration.ps1 `
+  -MigrationProject .\src\App.Data\App.Data.csproj `
+  -StartupProject .\src\App.Api\App.Api.csproj `
+  -Environment Staging `
+  -Apply
+```
+
+Select a context when a project contains more than one:
+
+```powershell
+.\scripts\Invoke-EfDatabaseMigration.ps1 `
+  -MigrationProject .\src\App.Data\App.Data.csproj `
+  -StartupProject .\src\App.Api\App.Api.csproj `
+  -DbContext BillingDbContext `
+  -Configuration Release
+```
+
+Apply and then reseed a non-Production database:
+
+```powershell
+.\scripts\Invoke-EfDatabaseMigration.ps1 `
+  -MigrationProject .\src\App.Data\App.Data.csproj `
+  -StartupProject .\src\App.Api\App.Api.csproj `
+  -DbContext AppDbContext `
+  -Environment Development `
+  -Apply `
+  -Reseed
+```
+
+`-Reseed` requires `-Apply`. It runs only after migration history is verified
+as current and invokes this startup-project contract:
+
+```powershell
+dotnet run `
+  --project .\src\App.Api\App.Api.csproj `
+  --configuration Release `
+  --no-build `
+  -- `
+  --seed
+```
+
+The application owns the `--seed` implementation. Make it idempotent, scoped
+to approved reference/test data, and return a nonzero exit code on failure.
+The script rejects `-Reseed` when `-Environment Production`; Production data
+must use a separately reviewed operational process.
+
+Automation can use these stable exit codes:
+
+| Exit code | Meaning |
+| --- | --- |
+| `0` | No migrations, already current, or apply/reseed succeeded |
+| `2` | Migrations are pending and preview mode made no change |
+| `3` | The EF model differs from the latest migration snapshot |
+| `4` | Tool, argument, project, context, or policy validation failed |
+| `5` | The database is missing or unreachable |
+| `6` | Migration history check, update, conflict, or verification failed |
+| `7` | Migrations succeeded but the documented seed entry point failed |
+
+For an additional dry-run view of `ShouldProcess`, combine `-Apply -WhatIf`.
+Database updates are idempotent: when no migrations are pending, `-Apply`
+performs no update.
+
+Error recovery:
+
+```powershell
+# Exit 3: create and review the missing migration, then check again.
+dotnet ef migrations add AddBillingIndex `
+  --project .\src\App.Data\App.Data.csproj `
+  --startup-project .\src\App.Api\App.Api.csproj `
+  --context BillingDbContext
+
+# Exit 5: correct environment configuration/network access, then check again.
+.\scripts\Invoke-EfDatabaseMigration.ps1 `
+  -MigrationProject .\src\App.Data\App.Data.csproj `
+  -StartupProject .\src\App.Api\App.Api.csproj `
+  -Environment Staging
+
+# Exit 6: inspect schema and __EFMigrationsHistory, resolve the conflict using
+# the application's reviewed recovery/runbook, then rerun preview mode first.
+```
+
+Do not put connection strings, passwords, or tokens on the command line. The
+script intentionally suppresses raw EF diagnostic output because it can contain
+provider connection details.
+
+Run the repeatable SQLite verification fixture:
+
+```powershell
+dotnet restore .\tests\fixtures\EfMigrationFixture\EfMigrationFixture.csproj
+.\tests\Invoke-EfDatabaseMigration.Tests.ps1
+```
+
+The fixture uses only disposable SQLite files under
+`artifacts/EfMigrationTests`.
 
 ## Using the prompt library
 

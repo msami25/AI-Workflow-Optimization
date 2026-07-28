@@ -2,6 +2,32 @@
 
 All notable changes to this toolkit are documented here.
 
+## 1.2.0 - 2026-07-28
+
+### Added
+
+- A reusable EF Core migration automation script with preview-by-default
+  behavior, `ShouldProcess`-guarded updates, context/environment selection, and
+  stable exit codes.
+- Explicit classification for no migrations, pending model changes, pending
+  database migrations, unavailable databases, migration conflicts, and seed
+  failures.
+- Optional non-Production reseeding through a documented startup-project
+  `--seed` entry point.
+- An isolated EF Core SQLite fixture and repeatable PowerShell integration suite
+  covering safe preview, apply/idempotency, failure recovery, and reseeding.
+
+### Security
+
+- Raw EF diagnostics are captured only for classification and never printed, so
+  connection strings and provider credentials are not exposed by the script.
+- Automatic Production reseeding is prohibited.
+
+### Documented
+
+- Migration usage, exit codes, seed contract, recovery examples, and actual
+  verification commands/results.
+
 ## 1.1.0 - 2026-07-27
 
 ### Added
